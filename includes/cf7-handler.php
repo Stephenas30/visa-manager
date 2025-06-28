@@ -1,14 +1,20 @@
 <?php
+
 // Hook CF7 après soumission du formulaire
 add_action('wpcf7_before_send_mail', 'vm_handle_cf7_submission');
 
-function vm_handle_cf7_submission($cf7) {
+function vm_handle_cf7_submission($cf7)
+{
     $form_title = $cf7->title();
 
-    if ($form_title !== 'form visa') return;
+    if ($form_title !== 'form visa') {
+        return;
+    }
 
     $submission = WPCF7_Submission::get_instance();
-    if (!$submission) return;
+    if (!$submission) {
+        return;
+    }
 
     $data = $submission->get_posted_data();
     $files = $submission->uploaded_files();
@@ -20,7 +26,9 @@ function vm_handle_cf7_submission($cf7) {
         'post_status' => 'publish',
     ]);
 
-    if (!$post_id) return;
+    if (!$post_id) {
+        return;
+    }
 
     // Initialisation du statut
     update_field('status', 'Nouvelle', $post_id);
@@ -51,8 +59,11 @@ function vm_handle_cf7_submission($cf7) {
     vm_send_notification_email($data['email'], $post_id);
 }
 
-function vm_process_uploaded_file($file_path, $post_id, $meta_key) {
-    if (!file_exists($file_path)) return;
+function vm_process_uploaded_file($file_path, $post_id, $meta_key)
+{
+    if (!file_exists($file_path)) {
+        return;
+    }
 
     $upload_dir = wp_upload_dir();
     $dossier_path = $upload_dir['basedir'] . "/visa_dossiers/{$post_id}";
@@ -84,7 +95,8 @@ function vm_process_uploaded_file($file_path, $post_id, $meta_key) {
     add_post_meta($post_id, $meta_key, $new_path);
 }
 
-function vm_save_application_data($post_id, $data) {
+function vm_save_application_data($post_id, $data)
+{
     // Liste des champs à sauvegarder
     $fields = [
         'nom', 'prenom', 'email', 'telephone', 'visa_type', 'nationality',
@@ -105,18 +117,19 @@ function vm_save_application_data($post_id, $data) {
     $upload_dir = wp_upload_dir();
     $dossier_path = $upload_dir['basedir'] . "/visa_dossiers/{$post_id}";
     wp_mkdir_p($dossier_path);
-    
+
     $txt_content = "=== DEMANDE DE VISA #{$post_id} ===\n";
     $txt_content .= "Date : " . current_time('d/m/Y H:i:s') . "\n";
     $txt_content .= "Nom complet : " . $data['nom'] . ' ' . $data['prenom'] . "\n";
     $txt_content .= "Email : " . $data['email'] . "\n";
     $txt_content .= "Type de visa : " . $data['visa_type'] . "\n";
     $txt_content .= "Pays de destination : " . $data['destination_country'] . "\n";
-    
+
     file_put_contents("{$dossier_path}/dossier-{$post_id}.txt", $txt_content);
 }
 
-function vm_send_notification_email($email, $post_id) {
+function vm_send_notification_email($email, $post_id)
+{
     $subject = "Votre demande de visa #{$post_id} a bien été reçue";
     $message = "Bonjour,\n\nVotre demande de visa (ID : {$post_id}) est enregistrée.\n\n";
     $message .= "Vous recevrez une mise à jour lorsque son statut évoluera.\n\nCordialement.";
@@ -128,6 +141,6 @@ function vm_send_notification_email($email, $post_id) {
     $admin_subject = "Nouvelle demande de visa #{$post_id}";
     $admin_message = "Une nouvelle demande a été soumise.\n";
     $admin_message .= "Voir la demande : " . admin_url("post.php?post={$post_id}&action=edit");
-    
+
     wp_mail($admin_email, $admin_subject, $admin_message);
 }

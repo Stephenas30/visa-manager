@@ -1,20 +1,32 @@
 <?php
+
 add_action('acf/save_post', 'vm_check_status_change', 20);
 
-function vm_check_status_change($post_id) {
-    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
-    if (strpos($post_id, 'user_') !== false) return;
-    if (get_post_type($post_id) !== 'visa_request') return;
+function vm_check_status_change($post_id)
+{
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    if (strpos($post_id, 'user_') !== false) {
+        return;
+    }
+    if (get_post_type($post_id) !== 'visa_request') {
+        return;
+    }
 
     $new_status = get_field('status', $post_id);
-    if (!$new_status) return;
+    if (!$new_status) {
+        return;
+    }
 
     $old_status = get_post_meta($post_id, '_vm_last_status', true);
     if (empty($old_status)) {
         update_post_meta($post_id, '_vm_last_status', $new_status);
         return;
     }
-    if ($new_status === $old_status) return;
+    if ($new_status === $old_status) {
+        return;
+    }
 
     update_post_meta($post_id, '_vm_last_status', $new_status);
 
@@ -23,7 +35,9 @@ function vm_check_status_change($post_id) {
     $prenom = get_post_meta($post_id, 'prenom', true);
     $nom = get_post_meta($post_id, 'nom', true);
 
-    if (!is_email($client_email)) return;
+    if (!is_email($client_email)) {
+        return;
+    }
 
     // Email admin
     $admin_email = get_option('admin_email');
@@ -50,40 +64,40 @@ function vm_check_status_change($post_id) {
 
         case 'Dossier renvoyé auprès du demandeur':
             $subject = "📤 Votre dossier est prêt – prochaine étape : l'ambassade";
-        
+
             // Génération du ZIP
             $upload_dir = wp_upload_dir();
             $dossier_path = $upload_dir['basedir'] . "/visa_dossiers/{$post_id}";
             $zip_path = $dossier_path . '/dossier_complet.zip';
             $zip_url = $upload_dir['baseurl'] . "/visa_dossiers/{$post_id}/dossier_complet.zip";
-        
+
             // Crée le ZIP si non existant ou ancien
             if (file_exists($zip_path)) {
                 unlink($zip_path); // on écrase l'ancien pour éviter les doublons
             }
-        
+
             if (file_exists($dossier_path)) {
                 $files = array_diff(scandir($dossier_path), ['.', '..', 'index.php']);
                 $zip = new ZipArchive();
-                if ($zip->open($zip_path, ZipArchive::CREATE) === TRUE) {
+                if ($zip->open($zip_path, ZipArchive::CREATE) === true) {
                     foreach ($files as $file) {
                         $file_path = $dossier_path . '/' . $file;
                         if (is_file($file_path)) {
                             $zip->addFile($file_path, $file);
                         }
                     }
-        
+
                     // Ajouter un fichier info.txt dans le ZIP
                     $infos = "Dossier Visa #{$post_id}<br>";
                     $infos .= "Nom : {$nom}<br>";
                     $infos .= "Statut : {$new_status}<br>";
                     $infos .= "Date : " . current_time('d/m/Y H:i') . "<br>";
                     $zip->addFromString('info.txt', $infos);
-        
+
                     $zip->close();
                 }
             }
-        
+
             // Contenu du mail
             $text = "Votre demande de visa a été traitée et finalisée par notre équipe.<br><br>"
                   . "Vous devez maintenant vous rendre à l'ambassade ou au centre consulaire pour finaliser votre demande.<br><br>"
@@ -114,7 +128,8 @@ function vm_check_status_change($post_id) {
     add_post_meta($post_id, '_vm_status_log', $log_entry, false);
 }
 
-function vm_build_html_email($prenom, $message_content) {
+function vm_build_html_email($prenom, $message_content)
+{
     return '
     <html>
     <head>

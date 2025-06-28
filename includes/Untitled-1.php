@@ -1,5 +1,6 @@
 <?php
-function visa_form_shortcode() {
+function visa_form_shortcode()
+{
     ob_start();
 
     // Initialisation des variables utiles
@@ -769,4 +770,3 @@ function visa_form_shortcode() {
     return ob_get_clean();
 }
 add_shortcode('visa_request_form', 'visa_form_shortcode');
-
