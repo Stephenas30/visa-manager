@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Plugin Name: Visa Manager
  * Description: Gestion des demandes de visa (CPT + logique custom).
@@ -7,13 +8,16 @@
  * Author URI: https://joel-stephanas.com
  */
 
-if (!defined('ABSPATH')) exit;
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 // ======================
 // 1. VÉRIFICATION DES DÉPENDANCES
 // ======================
 add_action('admin_init', 'vm_check_dependencies');
-function vm_check_dependencies() {
+function vm_check_dependencies()
+{
     $missing = [];
 
     if (!function_exists('acf_add_local_field_group')) {
@@ -25,9 +29,9 @@ function vm_check_dependencies() {
     }
 
     if (!empty($missing)) {
-        add_action('admin_notices', function() use ($missing) {
-            echo '<div class="error"><p>Visa Manager nécessite : <strong>' 
-                 . implode(', ', $missing) 
+        add_action('admin_notices', function () use ($missing) {
+            echo '<div class="error"><p>Visa Manager nécessite : <strong>'
+                 . implode(', ', $missing)
                  . '</strong>. Installez-les avant d\'utiliser ce plugin.</p></div>';
         });
     }
@@ -62,8 +66,11 @@ foreach ($includes as $file) {
 // 3. INITIALISATION ACF
 // ======================
 add_action('acf/init', 'vm_register_visa_fields');
-function vm_register_visa_fields() {
-    if (!function_exists('acf_add_local_field_group')) return;
+function vm_register_visa_fields()
+{
+    if (!function_exists('acf_add_local_field_group')) {
+        return;
+    }
 
     acf_add_local_field_group([
         'key' => 'group_visa_request',
@@ -117,34 +124,37 @@ function vm_register_visa_fields() {
 }
 
 // Injection dynamique des types de visa
-add_filter('acf/load_field/name=visa_type', function($field) {
+add_filter('acf/load_field/name=visa_type', function ($field) {
     $field['choices'] = vm_get_flat_visa_choices();
     return $field;
 });
 
 // Fonction qui retourne toutes les options à plat
-function vm_get_flat_visa_choices() {
+function vm_get_flat_visa_choices()
+{
     return [
         'Longs séjours' => 'Longs séjours',
         'Cours séjours' => 'Cours séjours',
         'TVA' => 'TVA',
-    
+
     ];
 }
 
-function vm_get_dossier_path($post_id) {
+function vm_get_dossier_path($post_id)
+{
     $upload = wp_upload_dir();
     $path = $upload['basedir'] . "/visa-dossiers/{$post_id}";
-    
+
     if (!file_exists($path)) {
         wp_mkdir_p($path);
         file_put_contents($path . '/index.php', '<?php // Silence is golden');
     }
-    
+
     return $path;
 }
 
-function vm_get_dossier_url($post_id) {
+function vm_get_dossier_url($post_id)
+{
     $upload = wp_upload_dir();
     return $upload['baseurl'] . "/visa-dossiers/{$post_id}";
 }
@@ -154,7 +164,8 @@ function vm_get_dossier_url($post_id) {
 // ======================
 register_activation_hook(__FILE__, 'vm_plugin_activation');
 
-function vm_plugin_activation() {
+function vm_plugin_activation()
+{
     if (function_exists('vm_init_roles')) {
         vm_init_roles();
     }
@@ -171,10 +182,15 @@ function vm_plugin_activation() {
 // ======================
 // 5. GÉNÉRATION ZIP
 // ======================
-function vm_telechargement_zip($atts) {
-    add_action('admin_init', function() {
-        if (!current_user_can('manage_options')) return;
-        if (!isset($_GET['download_zip']) || !isset($_GET['request_id'])) return;
+function vm_telechargement_zip($atts)
+{
+    add_action('admin_init', function () {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+        if (!isset($_GET['download_zip']) || !isset($_GET['request_id'])) {
+            return;
+        }
 
         $post_id = intval($_GET['request_id']);
         $dossier_path = vm_get_dossier_path($post_id);
@@ -186,13 +202,13 @@ function vm_telechargement_zip($atts) {
 
         $files = scandir($dossier_path);
         $valid_files = array_diff($files, ['..', '.', 'index.php']);
-        
+
         if (count($valid_files) === 0) {
             wp_die('Le dossier est vide.');
         }
 
         $zip = new ZipArchive();
-        if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
+        if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             wp_die('Impossible de créer l\'archive ZIP.');
         }
 
@@ -207,9 +223,9 @@ function vm_telechargement_zip($atts) {
         $infos .= "Nom: " . get_the_title($post_id) . "\n";
         $infos .= "Statut: " . get_field('status', $post_id) . "\n";
         $infos .= "Date création: " . get_the_date('', $post_id) . "\n";
-        
+
         $zip->addFromString('info.txt', $infos);
-        
+
         if (!$zip->close()) {
             wp_die('Erreur lors de la finalisation du ZIP.');
         }
@@ -223,15 +239,15 @@ function vm_telechargement_zip($atts) {
         header('Content-Length: ' . filesize($zip_path));
         header('Pragma: no-cache');
         header('Expires: 0');
-        
+
         readfile($zip_path);
-        
-        register_shutdown_function(function() use ($zip_path) {
+
+        register_shutdown_function(function () use ($zip_path) {
             if (file_exists($zip_path)) {
                 unlink($zip_path);
             }
         });
-        
+
         exit;
     });
 }

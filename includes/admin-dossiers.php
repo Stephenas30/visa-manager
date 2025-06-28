@@ -1,4 +1,5 @@
 <?php
+
 /*
 // 1. Ajout colonne personnalisée "Dossier" dans le listing des demandes
 add_filter('manage_visa_request_posts_columns', function($columns) {
@@ -17,10 +18,10 @@ add_action('manage_visa_request_posts_custom_column', function($column, $post_id
 add_action('admin_menu', function() {
     // Menu principal (caché)
     add_menu_page(
-        'Dossiers Visa', 
-        'Dossiers Visa', 
-        'manage_options', 
-        'visa_dossiers', 
+        'Dossiers Visa',
+        'Dossiers Visa',
+        'manage_options',
+        'visa_dossiers',
         'vm_render_dossiers_page',
         'dashicons-portfolio',
         30
@@ -103,7 +104,7 @@ add_action('admin_init', function() {
     header('Content-Length: ' . filesize($zip_path));
     header('Pragma: no-cache');
     header('Expires: 0');
-    
+
     readfile($zip_path);
     unlink($zip_path);
     exit;
@@ -207,7 +208,7 @@ add_action('admin_init', function() {
 
     $file_type = sanitize_text_field($_POST['vm_file_type']);
     $allowed_types = ['_proof_path', '_documents_paths', '_identity_photos', '_CIN_files', '_financial_docs'];
-    
+
     if (!in_array($file_type, $allowed_types)) {
         wp_die('Type de document non autorisé.');
     }
@@ -239,7 +240,7 @@ add_action('admin_init', function() {
 
         if (move_uploaded_file($file['tmp_name'], $target_path)) {
             add_post_meta($post_id, $file_type, $target_path);
-            
+
             // Enregistrer aussi en tant que média WordPress
             $attachment = [
                 'guid' => $upload_dir['baseurl'] . "/visa_dossiers/{$post_id}/{$new_name}",
@@ -247,7 +248,7 @@ add_action('admin_init', function() {
                 'post_title' => preg_replace('/\.[^.]+$/', '', $file_name),
                 'post_status' => 'inherit'
             ];
-            
+
             $attach_id = wp_insert_attachment($attachment, $target_path, $post_id);
             require_once(ABSPATH . 'wp-admin/includes/image.php');
             $attach_data = wp_generate_attachment_metadata($attach_id, $target_path);

@@ -1,6 +1,7 @@
 <?php
 // Enregistre le CPT Visa Request
-function register_visa_request_post_type() {
+function register_visa_request_post_type()
+{
     $labels = array(
         'name' => 'Demandes de Visa',
         'singular_name' => 'Demande de Visa',
@@ -32,18 +33,20 @@ function register_visa_request_post_type() {
 
     // Enregistrement des pages admin
     add_action('admin_menu', 'vm_register_admin_pages');
-    
+
     // Gestion des actions admin
     add_action('admin_init', 'vm_handle_admin_actions');
 }
 
-function vm_add_custom_columns($columns) {
+function vm_add_custom_columns($columns)
+{
     $columns['status'] = 'Statut';
     $columns['dossier_link'] = 'Dossier';
     return $columns;
 }
 
-function vm_show_custom_columns($column, $post_id) {
+function vm_show_custom_columns($column, $post_id)
+{
     switch ($column) {
         case 'status':
             $status = get_field('status', $post_id);
@@ -54,14 +57,14 @@ function vm_show_custom_columns($column, $post_id) {
                 'Dossier renvoyé auprès du demandeur' => '#2ecc71',
                 'En attente de documents supplémentaires' => '#e74c3c'
             ];
-            
+
             if ($status && isset($colors[$status])) {
                 echo '<span style="background:'.$colors[$status].'; color:white; padding:2px 6px; border-radius:3px;">'.$status.'</span>';
             } else {
                 echo $status ?: '—';
             }
             break;
-            
+
         case 'dossier_link':
             $url = admin_url("admin.php?page=visa_dossier&request_id={$post_id}");
             echo '<a href="' . esc_url($url) . '" class="button">Voir Dossier</a>';
@@ -69,7 +72,8 @@ function vm_show_custom_columns($column, $post_id) {
     }
 }
 
-function vm_register_admin_pages() {
+function vm_register_admin_pages()
+{
     // Menu principal
     add_submenu_page(
         'edit.php?post_type=visa_request',
@@ -91,7 +95,8 @@ function vm_register_admin_pages() {
     );
 }
 
-function vm_render_dossiers_page() {
+function vm_render_dossiers_page()
+{
     // Récupération des dates soumises (ou vides)
     $start_date = isset($_GET['start_date']) ? sanitize_text_field($_GET['start_date']) : '';
     $end_date = isset($_GET['end_date']) ? sanitize_text_field($_GET['end_date']) : '';
@@ -106,15 +111,15 @@ function vm_render_dossiers_page() {
     // Ajout d'un filtre de date si fourni
     if (!empty($start_date) || !empty($end_date)) {
         $date_query = ['inclusive' => true];
-    
+
         if (!empty($start_date)) {
             $date_query['after'] = $start_date;
         }
-    
+
         if (!empty($end_date)) {
             $date_query['before'] = $end_date;
         }
-    
+
         $args['date_query'] = [$date_query];
     }
 
@@ -143,7 +148,7 @@ function vm_render_dossiers_page() {
             'start_date' => $start_date,
             'end_date' => $end_date,
         ], $download_url);
-    
+
         echo '<form method="get" action="' . esc_url($download_url) . '" style="margin-bottom: 20px;">';
         echo '<input type="hidden" name="post_type" value="visa_request">';
         echo '<input type="hidden" name="page" value="visa_dossiers">';
@@ -179,7 +184,8 @@ function vm_render_dossiers_page() {
     echo '</div>';
 }
 
-function vm_render_dossier_page() {
+function vm_render_dossier_page()
+{
     $post_id = intval($_GET['request_id'] ?? 0);
     if (!$post_id) {
         echo '<div class="notice notice-error"><p>ID de requête manquant.</p></div>';
@@ -221,7 +227,9 @@ function vm_render_dossier_page() {
         $files = get_post_meta($post_id, $meta_key, false);
         if ($files) {
             foreach ($files as $file) {
-                if (is_array($file)) continue;
+                if (is_array($file)) {
+                    continue;
+                }
                 $url = $dossier_path . '/' . basename($file);
                 echo '<li><a href="' . esc_url($url) . '" target="_blank">' . esc_html($label) . ' - ' . esc_html(basename($file)) . '</a></li>';
                 $has_files = true;
@@ -270,7 +278,7 @@ function vm_render_dossier_page() {
 
     echo '<input type="hidden" name="vm_upload_file" value="1">';
     echo '<button type="submit" class="button button-primary">Uploader le document</button>';
-    
+
     // Section envoi d'email au demandeur
     echo '<div class="card" style="margin-bottom: 20px;">';
     echo '<h2>Communication avec le demandeur</h2>';
@@ -285,10 +293,10 @@ function vm_render_dossier_page() {
 
     if ($demandeur_email) {
         echo '<p><strong>Email du demandeur :</strong> ' . esc_html($demandeur_email) . '</p>';
-        
+
         echo '<form method="post" style="margin-top: 20px;">';
         wp_nonce_field('vm_send_email_' . $post_id);
-        
+
         echo '<div style="margin-bottom: 15px;">';
         echo '<label for="vm_email_type"><strong>Type d\'email :</strong></label><br>';
         echo '<select name="vm_email_type" id="vm_email_type" required style="margin-top: 5px; width: 100%; padding: 8px;">';
@@ -298,17 +306,17 @@ function vm_render_dossier_page() {
         echo '<option value="autre">Autre message</option>';
         echo '</select>';
         echo '</div>';
-        
+
         echo '<div style="margin-bottom: 15px;">';
         echo '<label for="vm_email_subject"><strong>Sujet :</strong></label><br>';
         echo '<input type="text" name="vm_email_subject" id="vm_email_subject" required style="margin-top: 5px; width: 100%; padding: 8px;">';
         echo '</div>';
-        
+
         echo '<div style="margin-bottom: 15px;">';
         echo '<label for="vm_email_message"><strong>Message :</strong></label><br>';
         echo '<textarea name="vm_email_message" id="vm_email_message" required style="margin-top: 5px; width: 100%; padding: 8px; min-height: 150px;"></textarea>';
         echo '</div>';
-        
+
         echo '<input type="hidden" name="vm_send_email" value="1">';
         echo '<button type="submit" class="button button-primary">Envoyer l\'email</button>';
         echo '</form>';
@@ -324,7 +332,8 @@ function vm_render_dossier_page() {
 }
 
 // Ajouter cette fonction pour la page de paramètres
-function vm_register_settings_page() {
+function vm_register_settings_page()
+{
     add_submenu_page(
         'edit.php?post_type=visa_request',
         'Paramètres Visa',
@@ -337,15 +346,16 @@ function vm_register_settings_page() {
 add_action('admin_menu', 'vm_register_settings_page');
 
 // Fonction pour afficher la page de paramètres
-function vm_render_settings_page() {
+function vm_render_settings_page()
+{
     ?>
     <div class="wrap">
         <h1>Paramètres des demandes de visa</h1>
         <form method="post" action="options.php">
             <?php
             settings_fields('vm_settings_group');
-            do_settings_sections('visa_settings');
-            ?>
+    do_settings_sections('visa_settings');
+    ?>
             <table class="form-table">
                 <tr valign="top">
                     <th scope="row">Nombre maximum de demandes par jour</th>
@@ -371,23 +381,29 @@ function vm_render_settings_page() {
 }
 
 // Enregistrement des paramètres
-function vm_register_settings() {
+function vm_register_settings()
+{
     register_setting('vm_settings_group', 'vm_max_daily_requests', 'absint');
     register_setting('vm_settings_group', 'vm_max_schengendays', 'absint');
 }
 add_action('admin_init', 'vm_register_settings');
-function vm_handle_admin_actions() {
-    if (!current_user_can('manage_options')) return;
+function vm_handle_admin_actions()
+{
+    if (!current_user_can('manage_options')) {
+        return;
+    }
 
     // Téléchargement d'un dossier individuel
     if (isset($_GET['download_zip']) && isset($_GET['request_id'])) {
         $post_id = intval($_GET['request_id']);
-        if (!$post_id) wp_die('ID de dossier invalide');
+        if (!$post_id) {
+            wp_die('ID de dossier invalide');
+        }
 
         $zip = new ZipArchive();
         $zip_path = sys_get_temp_dir() . "/visa_dossier_{$post_id}.zip";
 
-        if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
+        if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             wp_die('Impossible de créer l\'archive ZIP.');
         }
 
@@ -430,7 +446,7 @@ function vm_handle_admin_actions() {
         header('Content-Length: ' . filesize($zip_path));
         header('Pragma: no-cache');
         header('Expires: 0');
-        
+
         readfile($zip_path);
         unlink($zip_path);
         exit;
@@ -449,8 +465,12 @@ function vm_handle_admin_actions() {
 
         if (!empty($start_date) || !empty($end_date)) {
             $date_query = ['inclusive' => true];
-            if (!empty($start_date)) $date_query['after'] = $start_date;
-            if (!empty($end_date)) $date_query['before'] = $end_date;
+            if (!empty($start_date)) {
+                $date_query['after'] = $start_date;
+            }
+            if (!empty($end_date)) {
+                $date_query['before'] = $end_date;
+            }
             $args['date_query'] = [$date_query];
         }
 
@@ -462,7 +482,7 @@ function vm_handle_admin_actions() {
         $zip = new ZipArchive();
         $zip_path = sys_get_temp_dir() . "/tous_les_dossiers_visa.zip";
 
-        if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
+        if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             wp_die('Impossible de créer l\'archive ZIP.');
         }
 
@@ -471,7 +491,9 @@ function vm_handle_admin_actions() {
             $post_id = $request->ID;
             $dossier_dir = $upload_dir['basedir'] . "/visa_dossiers/{$post_id}";
 
-            if (!file_exists($dossier_dir)) continue;
+            if (!file_exists($dossier_dir)) {
+                continue;
+            }
 
             $files = new RecursiveIteratorIterator(
                 new RecursiveDirectoryIterator($dossier_dir),
@@ -512,7 +534,9 @@ function vm_handle_admin_actions() {
     // Upload manuel de document
     if (isset($_POST['vm_upload_file']) && isset($_POST['vm_file_type'])) {
         $post_id = intval($_GET['request_id'] ?? 0);
-        if (!$post_id) wp_die('ID de dossier invalide');
+        if (!$post_id) {
+            wp_die('ID de dossier invalide');
+        }
 
         if (!wp_verify_nonce($_POST['_wpnonce'], 'vm_manual_upload_' . $post_id)) {
             wp_die('Erreur de sécurité.');
@@ -520,7 +544,7 @@ function vm_handle_admin_actions() {
 
         $file_type = sanitize_text_field($_POST['vm_file_type']);
         $allowed_types = ['_proof_path', '_documents_paths', '_identity_photos', '_CIN_files', '_financial_docs'];
-        
+
         if (!in_array($file_type, $allowed_types)) {
             wp_die('Type de document non autorisé.');
         }
@@ -552,7 +576,7 @@ function vm_handle_admin_actions() {
 
             if (move_uploaded_file($file['tmp_name'], $target_path)) {
                 add_post_meta($post_id, $file_type, $target_path);
-                
+
                 // Enregistrer aussi en tant que média WordPress
                 $attachment = [
                     'guid' => $upload_dir['baseurl'] . "/visa_dossiers/{$post_id}/{$new_name}",
@@ -560,7 +584,7 @@ function vm_handle_admin_actions() {
                     'post_title' => preg_replace('/\.[^.]+$/', '', $file_name),
                     'post_status' => 'inherit'
                 ];
-                
+
                 $attach_id = wp_insert_attachment($attachment, $target_path, $post_id);
                 require_once(ABSPATH . 'wp-admin/includes/image.php');
                 $attach_data = wp_generate_attachment_metadata($attach_id, $target_path);
@@ -576,7 +600,9 @@ function vm_handle_admin_actions() {
     // Envoi d'email au demandeur
     if (isset($_POST['vm_send_email']) && isset($_POST['vm_email_type'])) {
         $post_id = intval($_GET['request_id'] ?? 0);
-        if (!$post_id) wp_die('ID de dossier invalide');
+        if (!$post_id) {
+            wp_die('ID de dossier invalide');
+        }
 
         if (!wp_verify_nonce($_POST['_wpnonce'], 'vm_send_email_' . $post_id)) {
             wp_die('Erreur de sécurité.');
@@ -590,14 +616,14 @@ function vm_handle_admin_actions() {
         $email_type = sanitize_text_field($_POST['vm_email_type']);
         $subject = sanitize_text_field($_POST['vm_email_subject']);
         $message = wp_kses_post($_POST['vm_email_message']);
-        
+
         // Ajouter l'entête standard
         $headers = array('Content-Type: text/html; charset=UTF-8');
-        
+
         // Construire le contenu de l'email selon le type
         $email_content = '<html><body>';
         $email_content .= '<p>Bonjour,</p>';
-        
+
         switch ($email_type) {
             case 'documents_manquants':
                 $email_content .= '<p>Concernant votre demande de visa (référence #' . $post_id . '), nous avons besoin des documents supplémentaires suivants :</p>';
@@ -608,17 +634,17 @@ function vm_handle_admin_actions() {
             default:
                 $email_content .= '<p>Concernant votre demande de visa (référence #' . $post_id . ') :</p>';
         }
-        
+
         $email_content .= '<div style="margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 5px;">';
         $email_content .= wpautop($message);
         $email_content .= '</div>';
-        
+
         $email_content .= '<p>Cordialement,<br>L\'équipe Visa</p>';
         $email_content .= '</body></html>';
-        
+
         // Envoyer l'email
         $sent = wp_mail($demandeur_email, $subject, $email_content, $headers);
-        
+
         if ($sent) {
             // Enregistrer dans l'historique
             $history_entry = [
@@ -627,15 +653,15 @@ function vm_handle_admin_actions() {
                 'user' => wp_get_current_user()->display_name,
                 'details' => 'Type: ' . $email_type . ' - Sujet: ' . $subject
             ];
-            
+
             $history = get_post_meta($post_id, '_visa_request_history', true);
             if (empty($history)) {
                 $history = [];
             }
-            
+
             $history[] = $history_entry;
             update_post_meta($post_id, '_visa_request_history', $history);
-            
+
             wp_redirect(admin_url("admin.php?page=visa_dossier&request_id={$post_id}&email_sent=1"));
             exit;
         } else {

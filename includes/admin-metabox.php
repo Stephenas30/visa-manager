@@ -1,6 +1,7 @@
 <?php
+
 // Ajout d'une metabox pour afficher tous les détails de la demande
-add_action('add_meta_boxes', function() {
+add_action('add_meta_boxes', function () {
     add_meta_box(
         'vm_post_details_full',
         'Détails complets de la demande',
@@ -11,7 +12,8 @@ add_action('add_meta_boxes', function() {
     );
 });
 
-function vm_render_full_details_box($post) {
+function vm_render_full_details_box($post)
+{
     $meta = get_post_meta($post->ID);
 
     // Champs personnalisés du formulaire
@@ -24,7 +26,7 @@ function vm_render_full_details_box($post) {
         'prenom' => 'Prénom',
         'email' => 'Email',
         'password' => 'Mot de passe',
-        'telephone_demandeur'=> 'Téléphone du demandeur',
+        'telephone_demandeur' => 'Téléphone du demandeur',
         'telephone_employeur' => 'Téléphone de l’employeur',
         'telephone' => 'Téléphone',
         'nom_famille' => 'Nom de famille',
@@ -85,7 +87,7 @@ function vm_render_full_details_box($post) {
         'telephone_prise_en_charge' => 'Téléphone du responsable',
         'membre_famille_prise_en_charge' => 'Membre de la famille responsable',
         'adresse_deja_reside_france' => 'Adresse en France lors du précédent séjour',
-        'nom_remplisseur'=> 'Nom du remplisseur de formulaire si différent',
+        'nom_remplisseur' => 'Nom du remplisseur de formulaire si différent',
         'remplisseur_nom' => 'Nom du remplisseur du formulaire',
         'remplisseur_mail' => 'Email du remplisseur',
         'adresse_email' => 'Adresse electronique',
@@ -99,21 +101,18 @@ function vm_render_full_details_box($post) {
 
     foreach ($fields as $key => $label) {
         $value = isset($meta[$key][0]) ? $meta[$key][0] : '';
-        
+
         echo '<tr>';
         echo '<th><label>' . esc_html($label) . '</label></th>';
         echo '<td>';
-        
+
         if (in_array($key, ['motif', 'adresse_employeur', 'adresse_domicile', 'adresse_invitant'])) {
             echo '<textarea style="width:100%" rows="3" readonly>' . esc_textarea($value) . '</textarea>';
-        } 
-        elseif ($key === 'approve_mandat') {
+        } elseif ($key === 'approve_mandat') {
             echo '<input type="checkbox" disabled ' . checked($value, '1', false) . ' /> Oui';
-        } 
-        elseif (in_array($key, ['date_naissance', 'date_arrivee', 'date_depart'])) {
+        } elseif (in_array($key, ['date_naissance', 'date_arrivee', 'date_depart'])) {
             echo '<input type="text" style="width:100%" value="' . esc_attr(date_i18n('d/m/Y', strtotime($value))) . '" readonly />';
-        }
-        else {
+        } else {
             echo '<input type="text" style="width:100%" value="' . esc_attr($value) . '" readonly />';
         }
 
@@ -147,7 +146,9 @@ function vm_render_full_details_box($post) {
             $files = get_post_meta($post->ID, $meta_key, false);
             if ($files) {
                 foreach ($files as $file) {
-                    if (is_array($file)) continue;
+                    if (is_array($file)) {
+                        continue;
+                    }
                     $url = $files_url . '/' . basename($file);
                     echo '<li><a href="' . esc_url($url) . '" target="_blank">' . esc_html($label) . ' - ' . esc_html(basename($file)) . '</a></li>';
                     $has_files = true;

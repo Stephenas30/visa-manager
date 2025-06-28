@@ -1,11 +1,17 @@
 <?php
+
 // Gestion des fichiers uploadés
 add_action('wpcf7_before_send_mail', 'vm_handle_uploads', 10, 3);
-function vm_handle_uploads($contact_form, $abort, $submission) {
-    if ($contact_form->title() !== 'form visa') return;
+function vm_handle_uploads($contact_form, $abort, $submission)
+{
+    if ($contact_form->title() !== 'form visa') {
+        return;
+    }
 
     $post_id = vm_get_associated_request($submission->get_posted_data());
-    if (!$post_id) return;
+    if (!$post_id) {
+        return;
+    }
 
     $upload_dir = wp_upload_dir();
     $dossier_path = $upload_dir['basedir'] . "/visa-dossiers/{$post_id}";
@@ -35,8 +41,8 @@ function vm_handle_uploads($contact_form, $abort, $submission) {
             add_post_meta($post_id, '_documents_paths', $new_path);
         }
     }
-     // 3. Photos d'identité
-     if (!empty($submission->uploaded_files()['identity'])) {
+    // 3. Photos d'identité
+    if (!empty($submission->uploaded_files()['identity'])) {
         $photos = (array)$submission->uploaded_files()['identity'];
         foreach ($photos as $file) {
             $new_name = "photo-identite-" . uniqid() . "." . pathinfo($file, PATHINFO_EXTENSION);
