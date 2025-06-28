@@ -1,8 +1,10 @@
 <?php
+
 add_action('admin_post_submit_visa_request', 'vm_handle_visa_request');
 add_action('admin_post_nopriv_submit_visa_request', 'vm_handle_visa_request');
 
-function vm_handle_visa_request() {
+function vm_handle_visa_request()
+{
     // Vérification du quota de demandes
     // Remplacer la partie vérification du quota par :
     $max_requests_per_day = get_option('vm_max_daily_requests', 10);
@@ -117,9 +119,9 @@ function vm_handle_visa_request() {
         'bourse' => sanitize_text_field($_POST['bourse'] ?? ''),
         'prise_charge_personnes' => sanitize_text_field($_POST['prise_charge_personnes'] ?? ''),
         'nom_prise_en_charge' => sanitize_textarea_field($_POST['nom_prise_en_charge'] ?? ''),
-        'adresse_prise_en_charge'=> sanitize_text_field($_POST['adresse_prise_en_charge'] ??''),
-        'telephone_prise_en_charge'=> sanitize_text_field($_POST['telephone_prise_en_charge'] ??''),
-        'membre_famille_prise_en_charge'=> sanitize_text_field($_POST['membre_famille_prise_en_charge'] ??''),
+        'adresse_prise_en_charge' => sanitize_text_field($_POST['adresse_prise_en_charge'] ?? ''),
+        'telephone_prise_en_charge' => sanitize_text_field($_POST['telephone_prise_en_charge'] ?? ''),
+        'membre_famille_prise_en_charge' => sanitize_text_field($_POST['membre_famille_prise_en_charge'] ?? ''),
         'bourse_oui' => sanitize_textarea_field($_POST['bourse_oui'] ?? ''),
         'adresse_email' => sanitize_textarea_field($_POST['adresse_email'] ?? ''),
         'adresse_deja_reside_france' => sanitize_textarea_field($_POST['adresse_deja_reside_france'] ?? ''),
@@ -180,7 +182,8 @@ function vm_handle_visa_request() {
     ];
 
     // Fusion des données selon le type de visa
-    $post_data = array_merge($common_data, 
+    $post_data = array_merge(
+        $common_data,
         ($visa_type === 'long_sejour') ? $long_sejour_data : $court_sejour_data
     );
 
@@ -313,7 +316,7 @@ function vm_handle_visa_request() {
     $zip_path = $dossier . '/documents.zip';
     $zip = new ZipArchive();
 
-    if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+    if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
         $file_types = [
             '_proof_path',
             '_identity_photos',

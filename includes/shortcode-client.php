@@ -1,6 +1,7 @@
 <?php
 add_shortcode('visa-dossier', 'vm_render_client_dossier');
-function vm_render_client_dossier() {
+function vm_render_client_dossier()
+{
     if (!is_user_logged_in()) {
         return '<p class="visa-alert">Vous devez être connecté pour voir votre dossier.</p>';
     }
@@ -128,15 +129,15 @@ function vm_render_client_dossier() {
         <ul>
             <?php
             $fichiers = glob($dossier_path . '/*.{jpg,png,pdf,doc,docx}', GLOB_BRACE);
-            if ($fichiers) {
-                foreach ($fichiers as $file) {
-                    $url = $dossier_url . '/' . basename($file);
-                    echo '<li><a href="' . esc_url($url) . '" target="_blank">' . esc_html(basename($file)) . '</a></li>';
-                }
-            } else {
-                echo '<li>Aucun fichier disponible.</li>';
-            }
-            ?>
+    if ($fichiers) {
+        foreach ($fichiers as $file) {
+            $url = $dossier_url . '/' . basename($file);
+            echo '<li><a href="' . esc_url($url) . '" target="_blank">' . esc_html(basename($file)) . '</a></li>';
+        }
+    } else {
+        echo '<li>Aucun fichier disponible.</li>';
+    }
+    ?>
         </ul>
 
         <?php if (strtolower($status) === 'refusé'): ?>

@@ -1,6 +1,8 @@
 <?php
+
 // Création des rôles à l'activation
-function vm_add_custom_roles() {
+function vm_add_custom_roles()
+{
     // Suppression des rôles existants pour éviter les doublons
     remove_role('visa_manager');
     remove_role('agent');
@@ -12,7 +14,7 @@ function vm_add_custom_roles() {
         'read' => true,
         'upload_files' => true,
         'edit_posts' => true, // Nécessaire pour l'accès admin
-        
+
         // Capacités spécifiques au CPT Visa (toujours au pluriel)
         'edit_visa_requests' => true,
         'edit_others_visa_requests' => true,
@@ -51,12 +53,14 @@ function vm_add_custom_roles() {
 }
 
 // Initialisation des rôles
-function vm_init_roles() {
+function vm_init_roles()
+{
     vm_add_custom_roles();
 }
 
 // Suppression des rôles à la désactivation
-function vm_remove_custom_roles() {
+function vm_remove_custom_roles()
+{
     remove_role('agent');
     remove_role('client');
     remove_role('visa_manager');
@@ -64,9 +68,12 @@ function vm_remove_custom_roles() {
 register_deactivation_hook(__FILE__, 'vm_remove_custom_roles');
 
 // Vérification des capacités des agents
-function vm_grant_agent_caps() {
+function vm_grant_agent_caps()
+{
     $role = get_role('agent');
-    if (!$role) return;
+    if (!$role) {
+        return;
+    }
 
     $caps = [
         'edit_visa_requests',
@@ -84,7 +91,8 @@ function vm_grant_agent_caps() {
 add_action('admin_init', 'vm_grant_agent_caps');
 
 // Restriction d'accès pour le visa_manager
-function vm_restrict_admin_access() {
+function vm_restrict_admin_access()
+{
     if (current_user_can('visa_manager') && !current_user_can('administrator') && !defined('DOING_AJAX')) {
         global $pagenow;
 
@@ -117,7 +125,7 @@ function vm_restrict_admin_access() {
 add_action('admin_init', 'vm_restrict_admin_access');
 
 // S'assurer que les rôles existent même après mise à jour
-add_action('admin_init', function() {
+add_action('admin_init', function () {
     if (!get_role('visa_manager') || !get_role('agent') || !get_role('client')) {
         vm_add_custom_roles();
     }
