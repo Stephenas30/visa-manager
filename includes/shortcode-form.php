@@ -1,12 +1,13 @@
 <?php
 
-function visa_form_shortcode() {
+function visa_form_shortcode()
+{
     // Récupérer les données du cookie si elles existent
     $form_data = isset($_COOKIE['visa_form_data']) ? json_decode(stripslashes($_COOKIE['visa_form_data']), true) : array();
 
     ob_start();
 
-    // pour horloge et date 
+    // pour horloge et date
     visa_render_datetime_block();
 
 
@@ -24,7 +25,7 @@ function visa_form_shortcode() {
         render_visa_type_and_city_selection();
         return ob_get_clean();
     }
-     // Sauvegarder les données après la deuxième étape
+    // Sauvegarder les données après la deuxième étape
     $form_data = array_merge($form_data, $_POST);
     save_form_data_to_cookie($form_data);
 
@@ -44,22 +45,23 @@ add_shortcode('visa_request_form', 'visa_form_shortcode');
  * Petit bloc d’affichage date + horloge.
  * Appelé au début de visa_form_shortcode().
  */
-function visa_render_datetime_block() { 
-    $max_daily_requests = get_option('vm_max_daily_requests', 50); 
-    $today_requests = get_option('vm_today_requests', 0); 
+function visa_render_datetime_block()
+{
+    $max_daily_requests = get_option('vm_max_daily_requests', 50);
+    $today_requests = get_option('vm_today_requests', 0);
     $remaining_requests = max(0, $max_daily_requests - $today_requests);
     ?>
     <div id="visa-datetime-container">
         <span id="visa-date"></span>
         <span id="visa-clock"></span>
         <div id="visa-requests-counter" style="margin-top: 8px; font-size: 14px; color: <?php echo ($remaining_requests > 0) ? '#21555e' : '#e74c3c'; ?>">
-            <?php 
+            <?php
             if ($remaining_requests > 0) {
                 echo "Il reste $remaining_requests demandes pouvant être acceptées aujourd'hui";
             } else {
                 echo "Le quota de demandes pour aujourd'hui est atteint";
             }
-            ?>
+    ?>
         </div>
     </div>
 
@@ -108,9 +110,10 @@ function visa_render_datetime_block() {
     </script>
 <?php }
 
-function render_days_calculator() {
+function render_days_calculator()
+{
     $max_days_allowed = get_option('vm_max_schengendays', 90);
-    
+
     ?>
     <div class="form-field" id="days-calculator">
         <label><span class="numero">34. </span>Calculateur de jours autorisés</label>
@@ -188,7 +191,8 @@ function render_days_calculator() {
     <?php
 }
 // Fonction pour afficher le formulaire d'email et mot de passe
-function render_email_password_form($form_data = array()) {
+function render_email_password_form($form_data = array())
+{
     $email = $form_data['email'] ?? '';
     $password = $form_data['password'] ?? '';
     ?>
@@ -267,7 +271,8 @@ function render_email_password_form($form_data = array()) {
     <?php
 }
 // Ajouter cette fonction pour sauvegarder les données dans un cookie
-function save_form_data_to_cookie($data) {
+function save_form_data_to_cookie($data)
+{
     if (!headers_sent()) {
         $json_data = json_encode($data);
         setcookie('visa_form_data', $json_data, time() + 3600 * 24 * 1, '/', '', false, true);
@@ -278,7 +283,8 @@ function save_form_data_to_cookie($data) {
 }
 
 // Fonction pour afficher la sélection du type de visa
-function render_visa_type_and_city_selection() {
+function render_visa_type_and_city_selection()
+{
     ?>
     <style>
         .visa-form-wrapper {
@@ -452,7 +458,8 @@ function render_visa_type_and_city_selection() {
 
 
 // Fonction pour afficher le formulaire en fonction du type de visa
-function render_visa_form($visa_type) {
+function render_visa_form($visa_type)
+{
     ?>
     <form action="<?= esc_url(admin_url('admin-post.php')) ?>" method="post" enctype="multipart/form-data" id="visa-request-form">
         <?php wp_nonce_field('vm_visa_form', 'vm_nonce'); ?>
@@ -470,24 +477,25 @@ function render_visa_form($visa_type) {
         } else {
             echo '<p>Type de visa non valide.</p>';
         }
-        ?>
+    ?>
     </form>
     <?php
 }
 
 // Fonction pour le formulaire de visa long séjour
-function render_long_sejour_form() {
+function render_long_sejour_form()
+{
     // Section 1: Informations personnelles
-    render_form_section('section-1', 'Informations personnelles', true, function() {
+    render_form_section('section-1', 'Informations personnelles', true, function () {
         render_personal_info_fields_long();
         render_marital_status_fields_long();
         render_grouped_files_fields();
         render_parental_authority_fields_long();
         render_travel_document_fields();
     });
-    
+
     // Section 2: Document de voyage et informations professionnelles
-    render_form_section('section-2', 'Document de voyage et informations professionnelles', false, function() {
+    render_form_section('section-2', 'Document de voyage et informations professionnelles', false, function () {
         render_professional_adresse_fields_long();
         render_professional_info_fields_long();
         render_travel_info_fields();
@@ -495,7 +503,7 @@ function render_long_sejour_form() {
     });
 
     // Section 3: Documents
-    render_form_section('section-3', 'Documents', false, function() {
+    render_form_section('section-3', 'Documents', false, function () {
         render_required_documents_fields();
         render_additional_documents_fields();
         render_acceptation();
@@ -507,9 +515,10 @@ function render_long_sejour_form() {
 
 // Fonction pour le formulaire de visa court séjour
 
-function render_court_sejour_form() {
+function render_court_sejour_form()
+{
     // Section 1: Informations personnelles
-    render_form_section('section-1', 'Informations personnelles', true, function() {
+    render_form_section('section-1', 'Informations personnelles', true, function () {
         render_personal_info_fields_court();
         render_marital_status_fields_court();
         render_parental_authority_fields_court();
@@ -517,7 +526,7 @@ function render_court_sejour_form() {
     });
 
     // Section 2: Document de voyage et informations professionnelles
-    render_form_section('section-2', 'Document de voyage et informations professionnelles', false, function() {
+    render_form_section('section-2', 'Document de voyage et informations professionnelles', false, function () {
         render_parental_resortisants_fields();
         render_professional_adresse_fields_court();
         render_professional_info_fields_court();
@@ -527,7 +536,7 @@ function render_court_sejour_form() {
     });
 
     // Section 3: Financement et documents
-    render_form_section('section-3', 'Documents', false, function() {
+    render_form_section('section-3', 'Documents', false, function () {
         render_required_documents_fields();
         render_additional_documents_fields();
     });
@@ -537,7 +546,8 @@ function render_court_sejour_form() {
 
 
 // numero 1 : Fonction pour les champs d'informations personnelles
-function render_personal_info_fields_long() {
+function render_personal_info_fields_long()
+{
     ?>
     <div class="form-field">
         <label><span class="numero">1. </span>Nom <span class="required">*</span></label>
@@ -580,7 +590,8 @@ function render_personal_info_fields_long() {
     <?php
 }
 
-function render_personal_info_fields_court() {
+function render_personal_info_fields_court()
+{
     ?>
     <div class="form-field">
         <label><span class="numero">1. </span>Nom <span class="required">*</span></label>
@@ -627,7 +638,8 @@ function render_personal_info_fields_court() {
 }
 
 // numero 2  Fonction pour les champs d'état civil
-function render_marital_status_fields_long() {
+function render_marital_status_fields_long()
+{
     ?>
     <div class="form-field">
         <label><span class="numero">8. </span>Sexe <span class="required">*</span></label>
@@ -654,7 +666,8 @@ function render_marital_status_fields_long() {
     <?php
 }
 
-function render_marital_status_fields_court() {
+function render_marital_status_fields_court()
+{
     ?>
     <div class="form-field">
         <label><span class="numero">8. </span>Sexe <span class="required">*</span></label>
@@ -685,7 +698,8 @@ function render_marital_status_fields_court() {
 }
 
 // numero 3 long s Fonction pour les champs de fichiers groupés
-function render_grouped_files_fields() {
+function render_grouped_files_fields()
+{
     ?>
     <div class="form-field">
         <label>Faites-vous partie d'un dossier groupé ? <span class="required">*</span></label>
@@ -709,7 +723,8 @@ function render_grouped_files_fields() {
 }
 
 // numero 4 longS Fonction pour les champs d'autorité parentale
-function render_parental_authority_fields_long() {
+function render_parental_authority_fields_long()
+{
     ?>
     <div class="form-field">
         <label for="autorite_parentale"><span class="numero">10. </span>Pour les mineurs : Nom, prénom, adresse (si différente de celle du demandeur) et nationalité de l'autorité parentale/du tuteur légal</label>
@@ -719,7 +734,8 @@ function render_parental_authority_fields_long() {
     <?php
 }
 
-function render_parental_authority_fields_court() {
+function render_parental_authority_fields_court()
+{
     ?>
     <div class="form-field">
         <label for="autorite_parentale"><span class="numero">10. </span>Autorité parentale (pour les mineurs)/tuteur légal ( nom, prénom, adresse (si différente de celle du demandeur), numéro de téléphone, adresse électronique et nationalité) :</label>
@@ -730,7 +746,8 @@ function render_parental_authority_fields_court() {
 }
 
 // numero 5 longS Fonction pour les champs de document de voyage
-function render_travel_document_fields() {
+function render_travel_document_fields()
+{
     ?>
     <div class="form-field">
         <label><span class="numero">11. </span>Numéro national d'identité (le cas échéant)</label>
@@ -772,7 +789,8 @@ function render_travel_document_fields() {
 }
 
 // numero 6 longSFonction pour les champs d'informations professionnelles
-function render_professional_adresse_fields_long() {
+function render_professional_adresse_fields_long()
+{
     ?>
     <div class="form-field">
         <label for="adresse"><span class="numero">17. </span>Adresse du domicile (n°, rue, ville, code postal, pays)</label>
@@ -806,7 +824,8 @@ function render_professional_adresse_fields_long() {
     <?php
 }
 
-function render_professional_adresse_fields_court() {
+function render_professional_adresse_fields_court()
+{
     ?>
     <div class="form-field">
         <label for=""><span class="numero">19. </span>Adresse du domicile et adresse électronique du demandeur :</label>
@@ -821,7 +840,8 @@ function render_professional_adresse_fields_court() {
 }
 
 // numero 7 longSFonction pour les champs d'informations professionnelles
-function render_professional_info_fields_long() {
+function render_professional_info_fields_long()
+{
     ?>
     <div class="form-field">
         <label><span class="numero">21. </span>Activité professionnelle actuelle <span class="required">*</span></label>
@@ -834,7 +854,8 @@ function render_professional_info_fields_long() {
     <?php
 }
 
-function render_professional_info_fields_court() {
+function render_professional_info_fields_court()
+{
     ?>
     <div class="form-field">
         <label><span class="numero">20. </span>Résidence dans un pays autre que celui de la nationalité actuelle :</label>
@@ -859,7 +880,8 @@ function render_professional_info_fields_court() {
 }
 
 //numero 8 longS  Fonction pour les champs d'informations sur le voyage
-function render_travel_info_fields() {
+function render_travel_info_fields()
+{
     ?>
     <div class="form-field">
         <label><span class="numero">23. </span>Je sollicite un visa pour le motif suivant : <span class="required">*</span></label>
@@ -882,7 +904,8 @@ function render_travel_info_fields() {
 }
 
 // numero 9 LongS Fonction pour les champs de coordonnées en France
-function render_france_contact_fields() {
+function render_france_contact_fields()
+{
     ?>
     <div class="form-field">
         <label><span class="numero">24. </span>Nom, adresse, courriel et n° téléphone en France de l'employeur / de l'établissement d'accueil / du membre de famille invitant, ...etc</label>
@@ -985,7 +1008,8 @@ function render_france_contact_fields() {
 }
 
 // numero 10 longS  Fonction pour les champs de financement
-function render_funding_fields() {
+function render_funding_fields()
+{
     ?>
     <div class="form-field">
         <label>Quels seront vos moyens d'existence en France ? <span class="required">*</span></label>
@@ -1075,7 +1099,8 @@ Je suis informé(e) que le livret d’informations « Venir vivre en France » e
     <?php
 }
 //numero 11 longS Fonction pour les champs de documents requis
-function render_required_documents_fields() {
+function render_required_documents_fields()
+{
     ?>
     <h3 class="form-subtitle">Documents obligatoires</h3>
                 
@@ -1105,7 +1130,8 @@ function render_required_documents_fields() {
 }
 
 // numero 12 longS Fonction pour les champs de documents supplémentaires
-function render_additional_documents_fields() {
+function render_additional_documents_fields()
+{
     ?>
     <h3 class="form-subtitle">Documents supplémentaires</h3>
     
@@ -1117,7 +1143,8 @@ function render_additional_documents_fields() {
     <?php
 }
 // cours sejours pqrent infor,qtion
-function render_parental_resortisants_fields(){
+function render_parental_resortisants_fields()
+{
     ?>
     <label><span class="numero">17. </span>Données à caractère personnel du membre de la famille qui est un ressortissant de l’UE, de l’EEE ou de la Confédération suisse ou un ressortissant du Royaume-Uni bénéficiaire de l’accord sur le retrait du Royaume-Uni de l’UE, selon le cas</label>
     <div class="form-field">
@@ -1170,8 +1197,9 @@ function render_parental_resortisants_fields(){
     
     <?php
 }
-// fonction information voyage 
-function render_voyage_information() {
+// fonction information voyage
+function render_voyage_information()
+{
     ?>
     <div class="form-field">
        <label><span class="numero">23. </span>Objet(s) du voyage : </label>
@@ -1205,7 +1233,7 @@ function render_voyage_information() {
         <label><span class="numero">25. </span>État membre de destination principale :</label>
         <select name="etat_membre" required>
             <option value="">-- Sélectionnez --</option>
-            <?php foreach($schengen_countries as $country): ?>
+            <?php foreach ($schengen_countries as $country): ?>
                 <option value="<?= $country ?>"><?= $country ?></option>
             <?php endforeach; ?>
         </select>
@@ -1214,7 +1242,7 @@ function render_voyage_information() {
         <label><span class="numero">26. </span>État membre de première entrée :</label>
         <select name="etat_membre_premiere_entree" required>
             <option value="">-- Sélectionnez --</option>
-            <?php foreach($schengen_countries as $country): ?>
+            <?php foreach ($schengen_countries as $country): ?>
                 <option value="<?= $country ?>"><?= $country ?></option>
             <?php endforeach; ?>
         </select>
@@ -1228,7 +1256,7 @@ function render_voyage_information() {
             <option value="Multiple">Entrées multiples</option>
         </select>
     </div>
-     <?php 
+     <?php
     // Ajouter le calculateur de jours
     render_days_calculator();
     ?>
@@ -1293,11 +1321,12 @@ function render_voyage_information() {
         <input type="date" name="valabilite_fin" >
     </div>   
     <?php
-    
+
 }
 
-// fonction cours sejours pour inforqtion do,icile et entreprise 
-function render_form_information_cours_sejour(){
+// fonction cours sejours pour inforqtion do,icile et entreprise
+function render_form_information_cours_sejour()
+{
     ?>
     <div class="form-field">
         <label>Information sur la personne invitante</label>
@@ -1383,8 +1412,9 @@ function render_form_information_cours_sejour(){
     <?php
 }
 
-// fonction cours sejours pour inforation paiement 
-function render_funding_fields_cours (){
+// fonction cours sejours pour inforation paiement
+function render_funding_fields_cours()
+{
     ?>
     <h3 class="form-subtitle">Financement du séjour</h3>
                 
@@ -1431,8 +1461,9 @@ function render_funding_fields_cours (){
     <?php
 }
 
-// fonction pour notificqtion 
-function render_notifications_section() {
+// fonction pour notificqtion
+function render_notifications_section()
+{
     ?>
     <div class="notifications-section" style="background: #f9f9f9; padding: 20px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px;">
         <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-bottom: 20px; font-size: 24px;">
@@ -1473,7 +1504,8 @@ function render_notifications_section() {
 
 // Fonction pour afficher l'acceptation lon séjour
 
-function render_acceptation() {
+function render_acceptation()
+{
     ?>
     <p>En connaissance de cause, j'accepte ce qui suit : aux fins de l'examen de ma demande de visa, il y a lieu de recueillir les données requises dans ce formulaire, de me photographier et, le cas échéant, de prendre mes empreintes digitales. Les données à caractère personnel me concernant qui figurent dans le présent formulaire de demande de visa, ainsi que mes empreintes digitales et ma photo, seront communiquées aux autorités françaises compétentes et traitées par elles, aux fins de la décision relative à ma demande de visa.</p>
     <p>Ces données ainsi que celles concernant la décision relative à ma demande de visa, ou toute décision d'annulation ou d'abrogation du visa, seront saisies et conservées dans la base française des données biométriques VISABIO pendant une période maximale de cinq ans, durant laquelle elles seront accessibles aux autorités chargées des visas, aux autorités compétentes chargées de contrôler les visas aux frontières, aux autorités nationales compétentes en matière d'immigration et d'asile aux fins de la vérification du respect des conditions d'entrée et de séjour réguliers sur le territoire de la France, aux fins de l'identification des personnes qui ne remplissent pas ou plus ces conditions. Dans certaines conditions, ces données seront aussi accessibles aux autorités françaises désignées et à Europol aux fins de la prévention et de la détection des infractions terroristes et des autres infractions pénales graves, ainsi que dans la conduite des enquêtes s'y rapportant. L'autorité française est compétente pour le traitement des données [(...)]</p>
@@ -1488,20 +1520,21 @@ function render_acceptation() {
 
 // Fonction pour afficher une section du formulaire
 
-function render_form_section($id, $title, $is_active = false, $content_callback) {
+function render_form_section($id, $title, $is_active = false, $content_callback)
+{
     ?>
     <div id="<?= $id ?>" class="form-section <?= $is_active ? 'active' : '' ?>">
         <h2 class="form-section-title"><?= $title ?></h2>
         <?php $content_callback(); ?>
 
         <div class="form-navigation">
-            <?php if ($id !== 'section-1'): // Afficher "Précédent" sauf pour la première section ?>
+            <?php if ($id !== 'section-1'): // Afficher "Précédent" sauf pour la première section?>
                 <button type="button" class="prev-btn">Précédent</button>
             <?php endif; ?>
 
-            <?php if ($id === 'section-3'): //  Afficher "Envoyer la demande" pour la dernière section ?>
+            <?php if ($id === 'section-3'): //  Afficher "Envoyer la demande" pour la dernière section?>
                 <button type="button" class="submit-btn" >Envoyer la demande</button>
-            <?php else: // Afficher "Suivant" pour les autres sections ?>
+            <?php else: // Afficher "Suivant" pour les autres sections?>
                 <button type="button" class="next-btn">Suivant</button>
             <?php endif; ?>
         </div>
@@ -1510,7 +1543,8 @@ function render_form_section($id, $title, $is_active = false, $content_callback)
 }
 
 
-function render_form_scripts() {
+function render_form_scripts()
+{
     ?>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -2061,7 +2095,8 @@ function render_form_scripts() {
     <?php
 }
 
-function render_form_styles() {
+function render_form_styles()
+{
     ?>
     <style>
         .visa-form-wrapper {
@@ -2334,7 +2369,8 @@ function render_form_styles() {
     <?php
 }
 
-function render_mandat_section() {
+function render_mandat_section()
+{
     ?>
     <div id="mandat-section" style="display: none; margin: 30px 0; padding: 30px; background: #fff; border-radius: 8px; box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);">
         <h3 style="text-align: center; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 15px; margin-bottom: 25px;">Approbation du mandat</h3>
@@ -2374,7 +2410,8 @@ function render_mandat_section() {
     </div>
     <?php
 }
-function render_dossier_final_section() {
+function render_dossier_final_section()
+{
     ?>
     <div id="dossier-final-section" style="display: none; margin: 30px 0; padding: 30px; background: #fff; border-radius: 8px; box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);">
         <h3 style="text-align: center; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 15px; margin-bottom: 25px;">Dossier Final - Visa Professionnel</h3>
